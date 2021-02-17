@@ -1,4 +1,4 @@
-This is a [Next.js](https://nextjs.org/) and GraphQL project that tracks SpaceX launches.
+This is a [Next.js](https://nextjs.org/) and GraphQL project that tracks SpaceX launches. You can see it in action at www.spacex-launch-tracker.netlify.com 🚀
 
 ## Getting Started
 
