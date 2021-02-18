@@ -1,16 +1,21 @@
 import Head from 'next/head';
+import { useCallback, useState } from 'react';
 import styles from '../styles/Home.module.css';
+import SpacexLaunches from '../components/SpacexLaunches.js';
+import MarsWeather from '../components/MarsWeather.js';
 import { ApolloClient, InMemoryCache, gql } from '@apollo/client';
 
-export default function Home({ upcomingLaunches, pastLaunches }) {
+export default function Home({ marsWeather, upcomingLaunches, pastLaunches }) {
 
-  pastLaunches = pastLaunches.filter((v,i,a) => a.findIndex(t => (t.id === v.id)) === i).sort((a, b) => { 
-    return new Date(b.launch_date_local) - new Date(a.launch_date_local); 
-  });
+  // console.log(marsWeather);
 
-  upcomingLaunches = upcomingLaunches.filter((v,i,a) => a.findIndex(t => (t.id === v.id)) === i).sort((a, b) => {
-    return new Date(b.launch_date_local) - new Date(a.launch_date_local);
-  });
+  const [toggle, setToggle] = useState(0);
+
+  const increment = useCallback(() => {
+    setToggle((v) => v + 1)
+  }, [setToggle]);
+
+  console.log(toggle);
 
   return (
     <div className={styles.container}>
@@ -20,37 +25,9 @@ export default function Home({ upcomingLaunches, pastLaunches }) {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>SpaceX Launches 🚀</h1>
-        <p className={styles.description}>Latest launches from SpaceX</p>
-
-        <h2>Upcoming Launches</h2>
-        <div className={styles.grid}>
-          {upcomingLaunches.map((launch, key) => {
-            return (
-              <a key={key} className={styles.card}>
-                <h3>{ launch.mission_name}</h3>
-                <p><strong>Launch Date:</strong> { new Date(launch.launch_date_local).toLocaleDateString("en-US") }</p>
-                <p><strong>Rocket Name:</strong> { launch.rocket.rocket_name }</p>
-                <p><strong>Launch Site:</strong> { launch.launch_site.site_name_long }</p>
-              </a>
-            );
-          })}
-        </div>
-
-        <h2>Past Launches</h2>
-        <div className={styles.grid}>
-          {pastLaunches.map((launch, key) => {
-            return (
-              <a key={key} href={launch.links.video_link} className={styles.card}>
-                <h3>{ launch.mission_name }</h3>
-                <p><strong>Launch Date:</strong> { new Date(launch.launch_date_local).toLocaleDateString("en-US") }</p>
-                <p><strong>Rocket Name:</strong> { launch.rocket.rocket_name }</p>
-                <p><strong>Launch Site:</strong> { launch.launch_site.site_name_long }</p>
-                {launch.launch_success ? <p className={styles.statusSuccess}>Launch succeeded</p> : <p className={styles.statusFailure}>Launch failed</p>}
-              </a>
-            );
-          })}
-        </div>
+        <button onClick={increment}>Click Me! {toggle}</button>
+        <MarsWeather marsWeather={marsWeather} />
+        {toggle > 5 && <SpacexLaunches upcomingLaunches={upcomingLaunches} pastLaunches={pastLaunches} />}
       </main>
 
       <footer className={styles.footer}>
@@ -66,6 +43,9 @@ export default function Home({ upcomingLaunches, pastLaunches }) {
 }
 
 export async function getStaticProps() {
+  const res = await fetch('https://api.nasa.gov/insight_weather/?api_key=G77jW0hWvdHZaX6fgqiw45ooGbOcewCIEAXofKzy&feedtype=json&ver=1.0');
+  const marsData = await res.json();
+
   const client = new ApolloClient({
     uri: 'https://api.spacex.land/graphql/',
     cache: new InMemoryCache()
@@ -109,7 +89,8 @@ export async function getStaticProps() {
   return {
     props: {
       upcomingLaunches: data.launchesUpcoming,
-      pastLaunches: data.launchesPast
+      pastLaunches: data.launchesPast,
+      marsWeather: marsData
     }
   }
 }
