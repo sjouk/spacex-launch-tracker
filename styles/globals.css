@@ -15,3 +15,11 @@ a {
 * {
   box-sizing: border-box;
 }
+
+button {
+  width: 100px;
+  background-color: #a44a3f;
+  color: white;
+  border-color: #432818;
+  border-radius: 20px;
+}

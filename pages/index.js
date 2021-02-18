@@ -5,38 +5,38 @@ import SpacexLaunches from '../components/SpacexLaunches.js';
 import MarsWeather from '../components/MarsWeather.js';
 import { ApolloClient, InMemoryCache, gql } from '@apollo/client';
 
-export default function Home({ marsWeather, upcomingLaunches, pastLaunches }) {
-
-  // console.log(marsWeather);
-
-  const [toggle, setToggle] = useState(0);
+export default function Home({ solArray, solNumbers, upcomingLaunches, pastLaunches }) {
+  const [toggle, setToggle] = useState(false);
+  const [background_color, setBackgroundColor] = useState('#F3EDE2');
 
   const increment = useCallback(() => {
-    setToggle((v) => v + 1)
-  }, [setToggle]);
-
-  console.log(toggle);
+    setToggle(toggle => !toggle);
+    setBackgroundColor(background_color => background_color === '#f1faee' ? '#F3EDE2' : '#f1faee');
+  }, [setToggle, setBackgroundColor]);
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} style={{background: background_color}}>
       <Head>
-        <title>Spacex Launch Tracker</title>
+        <title>Space Tracker</title>
         <link rel="icon" href="/favicon_io/favicon.ico" />
       </Head>
 
       <main className={styles.main}>
-        <button onClick={increment}>Click Me! {toggle}</button>
-        <MarsWeather marsWeather={marsWeather} />
-        {toggle > 5 && <SpacexLaunches upcomingLaunches={upcomingLaunches} pastLaunches={pastLaunches} />}
+        <button onClick={increment}>Toggle</button>
+        {toggle 
+          ? <SpacexLaunches upcomingLaunches={upcomingLaunches} pastLaunches={pastLaunches} /> 
+          : <MarsWeather solArray={solArray} solNumbers={solNumbers} />
+        }
       </main>
 
       <footer className={styles.footer}>
         <a href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
           target="_blank"
           rel="noopener noreferrer">
-          Powered by{' '}
+          Powered by{' '}     
           <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
         </a>
+        <a href="https://github.com/sjouk" target="_blank" style={{'margin-left': "0.5em"}}>& made by Sjouk</a>
       </footer>
     </div>
   )
@@ -45,6 +45,8 @@ export default function Home({ marsWeather, upcomingLaunches, pastLaunches }) {
 export async function getStaticProps() {
   const res = await fetch('https://api.nasa.gov/insight_weather/?api_key=G77jW0hWvdHZaX6fgqiw45ooGbOcewCIEAXofKzy&feedtype=json&ver=1.0');
   const marsData = await res.json();
+  const solNumbers = Object.keys(marsData).map(function(k) { return marsData[k] }).slice(7, 8);
+  const solArray = Object.keys(marsData).map(function(k) { return marsData[k] }).slice(0, 7);
 
   const client = new ApolloClient({
     uri: 'https://api.spacex.land/graphql/',
@@ -90,7 +92,8 @@ export async function getStaticProps() {
     props: {
       upcomingLaunches: data.launchesUpcoming,
       pastLaunches: data.launchesPast,
-      marsWeather: marsData
+      solNumbers: solNumbers,
+      solArray: solArray
     }
   }
 }
