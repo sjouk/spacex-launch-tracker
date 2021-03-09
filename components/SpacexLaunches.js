@@ -1,6 +1,7 @@
 import styles from '../styles/Home.module.css';
+import PropTypes from 'prop-types';
 
-export default function SpacexLaunches({ upcomingLaunches, pastLaunches }) {
+function SpacexLaunches({ upcomingLaunches, pastLaunches }) {
     console.log(upcomingLaunches);
 
     pastLaunches = pastLaunches.filter((v,i,a) => a.findIndex(t => (t.id === v.id)) === i).sort((a, b) => { 
@@ -47,3 +48,10 @@ export default function SpacexLaunches({ upcomingLaunches, pastLaunches }) {
         </>
     )
 }
+
+SpacexLaunches.propTypes = {
+    upcomingLaunches: PropTypes.array,
+    pastLaunches: PropTypes.array
+}
+
+export default SpacexLaunches;

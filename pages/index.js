@@ -4,8 +4,9 @@ import styles from '../styles/Home.module.css';
 import SpacexLaunches from '../components/SpacexLaunches.js';
 import MarsWeather from '../components/MarsWeather.js';
 import { ApolloClient, InMemoryCache, gql } from '@apollo/client';
+import PropTypes from 'prop-types';
 
-export default function Home({ solArray, solNumbers, upcomingLaunches, pastLaunches }) {
+function Home({ upcomingLaunches, pastLaunches }) {
   const [toggle, setToggle] = useState(false);
   const [background_color, setBackgroundColor] = useState('#F3EDE2');
 
@@ -22,10 +23,10 @@ export default function Home({ solArray, solNumbers, upcomingLaunches, pastLaunc
       </Head>
 
       <main className={styles.main}>
-        <button onClick={increment}>Toggle</button>
+        <button onClick={increment}>View {toggle ? "Mars Weather" : "Spacex Launches"}</button>
         {toggle 
           ? <SpacexLaunches upcomingLaunches={upcomingLaunches} pastLaunches={pastLaunches} /> 
-          : <MarsWeather solArray={solArray} solNumbers={solNumbers} />
+          : <MarsWeather />
         }
       </main>
 
@@ -33,25 +34,32 @@ export default function Home({ solArray, solNumbers, upcomingLaunches, pastLaunc
         <a href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
           target="_blank"
           rel="noopener noreferrer">
-          Powered by{' '}     
+          Powered by{' '}
           <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
         </a>
-        <a href="https://github.com/sjouk" target="_blank" style={{'margin-left': "0.5em"}}>& made by Sjouk</a>
+        <a href="https://github.com/sjouk" target="_blank" style={{'marginLeft': "0.5em"}}>& made by Sjouk</a>
       </footer>
     </div>
   )
 }
 
-export async function getStaticProps() {
-  const res = await fetch('https://api.nasa.gov/insight_weather/?api_key=G77jW0hWvdHZaX6fgqiw45ooGbOcewCIEAXofKzy&feedtype=json&ver=1.0');
-  const marsData = await res.json();
-  const solNumbers = Object.keys(marsData).map(function(k) { return marsData[k] }).slice(7, 8);
-  const solArray = Object.keys(marsData).map(function(k) { return marsData[k] }).slice(0, 7);
+Home.propTypes = {
+  upcomingLaunches: PropTypes.array,
+  pastLaunches: PropTypes.array
+}
 
+export default Home;
+
+export async function getStaticProps() {
   const client = new ApolloClient({
     uri: 'https://api.spacex.land/graphql/',
     cache: new InMemoryCache()
   });
+
+  const fakeData = await fetch('https://api.nasa.gov/insight_weather/?api_key=G77jW0hWvdHZaX6fgqiw45ooGbOcewCIEAXofKzy&feedtype=json&ver=1.0');
+  const data1 = fakeData.json();
+
+  console.log(data1);
 
   const { data } = await client.query({
     query: gql`
@@ -91,9 +99,7 @@ export async function getStaticProps() {
   return {
     props: {
       upcomingLaunches: data.launchesUpcoming,
-      pastLaunches: data.launchesPast,
-      solNumbers: solNumbers,
-      solArray: solArray
+      pastLaunches: data.launchesPast
     }
   }
 }
